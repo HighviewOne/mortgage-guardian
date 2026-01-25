@@ -1,0 +1,892 @@
+openapi: 3.1.0
+info:
+  title: Mortgage Guardian API
+  description: |
+    API for tracking mortgage deadlines, calculating modified payments,
+    and providing guidance on avoiding foreclosure.
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://mortgage-guardian-api.onrender.com
+    description: Production server
+
+tags:
+  - name: mortgages
+    description: Mortgage management operations
+  - name: calculations
+    description: Payment and risk calculations
+  - name: guidance
+    description: Foreclosure prevention guidance
+  - name: health
+    description: Health check endpoints
+
+paths:
+  /health:
+    get:
+      tags:
+        - health
+      summary: Health check
+      description: Check if the API is running
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/v1/mortgages:
+    get:
+      tags:
+        - mortgages
+      summary: List all mortgages
+      description: Retrieve all mortgages for the authenticated user
+      operationId: listMortgages
+      responses:
+        '200':
+          description: List of mortgages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Mortgage'
+    post:
+      tags:
+        - mortgages
+      summary: Create a new mortgage
+      description: Add a new mortgage to track
+      operationId: createMortgage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MortgageCreate'
+      responses:
+        '201':
+          description: Mortgage created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mortgage'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /api/v1/mortgages/{mortgage_id}:
+    get:
+      tags:
+        - mortgages
+      summary: Get mortgage details
+      description: Retrieve details of a specific mortgage
+      operationId: getMortgage
+      parameters:
+        - name: mortgage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Mortgage details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mortgage'
+        '404':
+          description: Mortgage not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - mortgages
+      summary: Update mortgage
+      description: Update an existing mortgage
+      operationId: updateMortgage
+      parameters:
+        - name: mortgage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MortgageUpdate'
+      responses:
+        '200':
+          description: Mortgage updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mortgage'
+        '404':
+          description: Mortgage not found
+        '422':
+          description: Validation error
+    delete:
+      tags:
+        - mortgages
+      summary: Delete mortgage
+      description: Remove a mortgage from tracking
+      operationId: deleteMortgage
+      parameters:
+        - name: mortgage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Mortgage deleted successfully
+        '404':
+          description: Mortgage not found
+
+  /api/v1/mortgages/{mortgage_id}/dashboard:
+    get:
+      tags:
+        - calculations
+      summary: Get payment dashboard
+      description: Get current payment status, arrears, and risk level
+      operationId: getPaymentDashboard
+      parameters:
+        - name: mortgage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Payment dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentDashboard'
+        '404':
+          description: Mortgage not found
+
+  /api/v1/mortgages/{mortgage_id}/scenarios:
+    get:
+      tags:
+        - calculations
+      summary: Get modification scenarios
+      description: Calculate various loan modification scenarios
+      operationId: getModificationScenarios
+      parameters:
+        - name: mortgage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Modification scenarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModificationScenario'
+        '404':
+          description: Mortgage not found
+
+  /api/v1/mortgages/{mortgage_id}/deadlines:
+    get:
+      tags:
+        - calculations
+      summary: Get foreclosure deadlines
+      description: Get state-specific foreclosure timeline and deadlines
+      operationId: getDeadlines
+      parameters:
+        - name: mortgage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Deadline information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeadlineInfo'
+        '404':
+          description: Mortgage not found
+
+  /api/v1/mortgages/{mortgage_id}/warnings:
+    get:
+      tags:
+        - calculations
+      summary: Get active warnings
+      description: Get all active warnings and alerts for the mortgage
+      operationId: getWarnings
+      parameters:
+        - name: mortgage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Active warnings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Warning'
+        '404':
+          description: Mortgage not found
+
+  /api/v1/mortgages/{mortgage_id}/guidance:
+    get:
+      tags:
+        - guidance
+      summary: Get step-by-step guidance
+      description: Get personalized guidance based on current mortgage status
+      operationId: getGuidance
+      parameters:
+        - name: mortgage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Guidance steps
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuidanceResponse'
+        '404':
+          description: Mortgage not found
+
+  /api/v1/calculate/payment:
+    post:
+      tags:
+        - calculations
+      summary: Calculate monthly payment
+      description: Calculate monthly payment for given loan parameters (no mortgage required)
+      operationId: calculatePayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCalculationRequest'
+      responses:
+        '200':
+          description: Calculated payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentCalculationResponse'
+        '422':
+          description: Validation error
+
+  /api/v1/states:
+    get:
+      tags:
+        - guidance
+      summary: List states with foreclosure info
+      description: Get list of US states with foreclosure timeline information
+      operationId: listStates
+      responses:
+        '200':
+          description: List of states
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StateInfo'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+          example: 1.0.0
+
+    MortgageCreate:
+      type: object
+      required:
+        - loan_amount
+        - current_balance
+        - interest_rate
+        - loan_term_months
+        - remaining_months
+        - monthly_payment
+        - loan_start_date
+        - state
+      properties:
+        loan_amount:
+          type: number
+          format: double
+          minimum: 0.01
+          maximum: 10000000
+          description: Original principal balance
+          example: 300000
+        current_balance:
+          type: number
+          format: double
+          minimum: 0.01
+          description: Remaining balance owed
+          example: 275000
+        interest_rate:
+          type: number
+          format: double
+          minimum: 0.1
+          maximum: 25
+          description: Annual interest rate (percentage)
+          example: 6.5
+        loan_term_months:
+          type: integer
+          minimum: 12
+          maximum: 480
+          description: Original loan term in months
+          example: 360
+        remaining_months:
+          type: integer
+          minimum: 1
+          description: Months remaining on loan
+          example: 324
+        monthly_payment:
+          type: number
+          format: double
+          minimum: 0.01
+          description: Current required monthly payment
+          example: 1896.20
+        loan_start_date:
+          type: string
+          format: date
+          description: Date loan originated
+          example: "2022-01-15"
+        last_payment_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date of most recent payment
+          example: "2024-10-01"
+        missed_payments:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Number of consecutive missed payments
+          example: 2
+        monthly_income:
+          type: number
+          format: double
+          minimum: 0
+          description: Gross monthly household income
+          example: 6500
+        monthly_expenses:
+          type: number
+          format: double
+          minimum: 0
+          default: 0
+          description: Monthly non-housing expenses
+          example: 2000
+        property_value:
+          type: number
+          format: double
+          minimum: 0
+          description: Current estimated property value
+          example: 350000
+        state:
+          type: string
+          minLength: 2
+          maxLength: 2
+          description: US state code
+          example: "CA"
+        property_address:
+          type: string
+          description: Property address
+          example: "123 Main St, Los Angeles, CA 90001"
+
+    MortgageUpdate:
+      type: object
+      properties:
+        current_balance:
+          type: number
+          format: double
+          minimum: 0.01
+        interest_rate:
+          type: number
+          format: double
+          minimum: 0.1
+          maximum: 25
+        remaining_months:
+          type: integer
+          minimum: 1
+        monthly_payment:
+          type: number
+          format: double
+          minimum: 0.01
+        last_payment_date:
+          type: string
+          format: date
+          nullable: true
+        missed_payments:
+          type: integer
+          minimum: 0
+        monthly_income:
+          type: number
+          format: double
+          minimum: 0
+        monthly_expenses:
+          type: number
+          format: double
+          minimum: 0
+        property_value:
+          type: number
+          format: double
+          minimum: 0
+        property_address:
+          type: string
+
+    Mortgage:
+      allOf:
+        - $ref: '#/components/schemas/MortgageCreate'
+        - type: object
+          required:
+            - id
+            - created_at
+            - updated_at
+          properties:
+            id:
+              type: integer
+              description: Unique mortgage identifier
+              example: 1
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    PaymentDashboard:
+      type: object
+      required:
+        - mortgage_id
+        - current_monthly_payment
+        - days_past_due
+        - total_arrears
+        - late_fees_estimate
+        - risk_level
+        - dti_ratio
+      properties:
+        mortgage_id:
+          type: integer
+        current_monthly_payment:
+          type: number
+          format: double
+          example: 1896.20
+        days_past_due:
+          type: integer
+          example: 45
+        total_arrears:
+          type: number
+          format: double
+          description: Total amount behind including missed payments
+          example: 3792.40
+        late_fees_estimate:
+          type: number
+          format: double
+          description: Estimated late fees accrued
+          example: 189.62
+        risk_level:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+          example: MEDIUM
+        dti_ratio:
+          type: number
+          format: double
+          description: Debt-to-income ratio percentage
+          example: 42.5
+        next_payment_due:
+          type: string
+          format: date
+          example: "2025-02-01"
+        ltv_ratio:
+          type: number
+          format: double
+          description: Loan-to-value ratio percentage
+          example: 78.6
+
+    ModificationScenario:
+      type: object
+      required:
+        - scenario_type
+        - description
+        - new_monthly_payment
+        - payment_change
+        - new_term_months
+        - total_interest
+        - total_cost
+      properties:
+        scenario_type:
+          type: string
+          enum:
+            - RATE_REDUCTION_1
+            - RATE_REDUCTION_2
+            - TERM_EXTENSION_10
+            - TERM_EXTENSION_20
+            - PRINCIPAL_FORBEARANCE
+            - COMBINATION
+          example: RATE_REDUCTION_1
+        description:
+          type: string
+          example: "1% Interest Rate Reduction"
+        new_interest_rate:
+          type: number
+          format: double
+          example: 5.5
+        new_monthly_payment:
+          type: number
+          format: double
+          example: 1703.37
+        payment_change:
+          type: number
+          format: double
+          description: Monthly savings (negative) or increase (positive)
+          example: -192.83
+        new_term_months:
+          type: integer
+          example: 324
+        term_change_months:
+          type: integer
+          description: Change in term length
+          example: 0
+        total_interest:
+          type: number
+          format: double
+          description: Total interest over remaining life
+          example: 277091.88
+        total_cost:
+          type: number
+          format: double
+          description: Total amount paid over remaining life
+          example: 552091.88
+        meets_affordability:
+          type: boolean
+          description: Whether payment meets 31% DTI target
+          example: true
+
+    DeadlineInfo:
+      type: object
+      required:
+        - state
+        - foreclosure_type
+        - timeline_days_min
+        - timeline_days_max
+        - current_stage
+        - milestones
+      properties:
+        state:
+          type: string
+          example: "CA"
+        state_name:
+          type: string
+          example: "California"
+        foreclosure_type:
+          type: string
+          enum: [JUDICIAL, NON_JUDICIAL, HYBRID]
+          example: NON_JUDICIAL
+        timeline_days_min:
+          type: integer
+          description: Minimum days in foreclosure process
+          example: 120
+        timeline_days_max:
+          type: integer
+          description: Maximum days in foreclosure process
+          example: 200
+        current_stage:
+          type: string
+          enum:
+            - CURRENT
+            - GRACE_PERIOD
+            - LATE
+            - DEFAULT
+            - PRE_FORECLOSURE
+            - FORECLOSURE
+            - AUCTION
+          example: LATE
+        days_until_next_stage:
+          type: integer
+          example: 45
+        milestones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Milestone'
+
+    Milestone:
+      type: object
+      required:
+        - stage
+        - days_from_first_missed
+        - description
+        - status
+      properties:
+        stage:
+          type: string
+          example: "Default Notice"
+        days_from_first_missed:
+          type: integer
+          example: 90
+        estimated_date:
+          type: string
+          format: date
+          example: "2025-03-15"
+        description:
+          type: string
+          example: "Lender files Notice of Default"
+        status:
+          type: string
+          enum: [PASSED, CURRENT, UPCOMING]
+          example: UPCOMING
+
+    Warning:
+      type: object
+      required:
+        - type
+        - severity
+        - title
+        - message
+      properties:
+        type:
+          type: string
+          enum:
+            - PAYMENT_DUE
+            - LATE_NOTICE
+            - DEFAULT_WARNING
+            - PRE_FORECLOSURE
+            - FORECLOSURE_NOTICE
+            - AUCTION_IMMINENT
+            - HIGH_DTI
+            - UNDERWATER
+          example: DEFAULT_WARNING
+        severity:
+          type: string
+          enum: [INFO, WARNING, URGENT, CRITICAL]
+          example: WARNING
+        title:
+          type: string
+          example: "Default Warning"
+        message:
+          type: string
+          example: "You are 30+ days past due. Contact your lender immediately."
+        action_required:
+          type: boolean
+          example: true
+        deadline:
+          type: string
+          format: date
+          nullable: true
+
+    GuidanceResponse:
+      type: object
+      required:
+        - risk_level
+        - summary
+        - immediate_steps
+        - resources
+      properties:
+        risk_level:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        summary:
+          type: string
+          description: Brief assessment of situation
+        immediate_steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/GuidanceStep'
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resource'
+        lender_script:
+          type: string
+          description: Suggested script for calling lender
+
+    GuidanceStep:
+      type: object
+      required:
+        - step_number
+        - title
+        - description
+        - priority
+      properties:
+        step_number:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Contact Your Lender"
+        description:
+          type: string
+          example: "Call your lender's loss mitigation department to discuss options."
+        priority:
+          type: string
+          enum: [IMMEDIATE, HIGH, MEDIUM, LOW]
+          example: IMMEDIATE
+        deadline_days:
+          type: integer
+          description: Days within which to complete
+          example: 3
+        phone_number:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+          nullable: true
+
+    Resource:
+      type: object
+      required:
+        - name
+        - type
+        - description
+      properties:
+        name:
+          type: string
+          example: "HUD Housing Counseling"
+        type:
+          type: string
+          enum: [GOVERNMENT, NONPROFIT, LEGAL, FINANCIAL]
+          example: GOVERNMENT
+        description:
+          type: string
+          example: "Free counseling from HUD-approved agencies"
+        phone:
+          type: string
+          example: "1-800-569-4287"
+        url:
+          type: string
+          format: uri
+          example: "https://www.hud.gov/counseling"
+        state_specific:
+          type: boolean
+          example: false
+
+    PaymentCalculationRequest:
+      type: object
+      required:
+        - principal
+        - annual_rate
+        - term_months
+      properties:
+        principal:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 275000
+        annual_rate:
+          type: number
+          format: double
+          minimum: 0.1
+          maximum: 25
+          example: 6.5
+        term_months:
+          type: integer
+          minimum: 1
+          example: 324
+
+    PaymentCalculationResponse:
+      type: object
+      required:
+        - monthly_payment
+        - total_interest
+        - total_cost
+      properties:
+        monthly_payment:
+          type: number
+          format: double
+          example: 1896.20
+        total_interest:
+          type: number
+          format: double
+          example: 339448.80
+        total_cost:
+          type: number
+          format: double
+          example: 614448.80
+
+    StateInfo:
+      type: object
+      required:
+        - code
+        - name
+        - foreclosure_type
+        - timeline_days_min
+        - timeline_days_max
+      properties:
+        code:
+          type: string
+          example: "CA"
+        name:
+          type: string
+          example: "California"
+        foreclosure_type:
+          type: string
+          enum: [JUDICIAL, NON_JUDICIAL, HYBRID]
+        timeline_days_min:
+          type: integer
+        timeline_days_max:
+          type: integer
+        notes:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          example: "Mortgage not found"
+
+    ValidationError:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  type: string
+              msg:
+                type: string
+              type:
+                type: string

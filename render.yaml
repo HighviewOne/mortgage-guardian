@@ -1,0 +1,44 @@
+# Render.com Blueprint specification
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Backend API
+  - type: web
+    name: mortgage-guardian-api
+    env: python
+    plan: free
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mortgage-guardian-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+  # Frontend static site
+  - type: web
+    name: mortgage-guardian-frontend
+    env: static
+    plan: free
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=31536000
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://mortgage-guardian-api.onrender.com
+
+databases:
+  - name: mortgage-guardian-db
+    plan: free
+    databaseName: mortgage_guardian
+    user: mortgage

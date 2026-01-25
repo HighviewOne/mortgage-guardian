@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - DATABASE_URL=sqlite:///:memory:
+    command: pytest --cov=app tests/ -v
+    volumes:
+      - ./backend/tests:/app/tests:ro
+
+  frontend-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      target: builder
+    command: npm test -- --run
+    volumes:
+      - ./frontend/src:/app/src:ro
