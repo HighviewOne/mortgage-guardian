@@ -21,8 +21,10 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
-        "https://*.onrender.com",
+        "https://mortgage-guardian-mocha.vercel.app",
+        "https://mortgage-guardian-o2o3.onrender.com",
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
