@@ -5,8 +5,7 @@ services:
   # Backend API
   - type: web
     name: mortgage-guardian-api
-    env: python
-    plan: free
+    runtime: python
     buildCommand: cd backend && pip install -r requirements.txt
     startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
@@ -21,8 +20,7 @@ services:
   # Frontend static site
   - type: web
     name: mortgage-guardian-frontend
-    env: static
-    plan: free
+    runtime: static
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: frontend/dist
     headers:
@@ -39,6 +37,5 @@ services:
 
 databases:
   - name: mortgage-guardian-db
-    plan: free
     databaseName: mortgage_guardian
     user: mortgage
