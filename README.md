@@ -118,14 +118,16 @@ The OpenAPI specification is available at:
 
 ## Deployment
 
-The application is deployed on Render.com:
-- **Live URL**: [To be added after deployment]
+The application is deployed and live:
+- **Frontend**: https://mortgage-guardian-mocha.vercel.app
+- **Backend API**: https://mortgage-guardian-o2o3.onrender.com
+- **API Documentation**: https://mortgage-guardian-o2o3.onrender.com/docs
 
 ### Deploy Your Own
 1. Fork this repository
-2. Create a Render.com account
-3. Connect your GitHub repository
-4. Deploy using the `render.yaml` blueprint
+2. Deploy backend to Render.com (Web Service, Python, free tier)
+3. Deploy frontend to Vercel (connect GitHub, add `VITE_API_URL` env var)
+4. Update CORS in `backend/app/main.py` with your frontend domain
 
 ## Project Structure
 
