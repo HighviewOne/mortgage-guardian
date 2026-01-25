@@ -3,7 +3,7 @@ import { api, ApiError } from '../services/api';
 
 // Mock fetch
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 describe('API Client', () => {
   beforeEach(() => {

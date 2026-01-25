@@ -161,8 +161,8 @@ function Dashboard({ dashboard, mortgage }: DashboardProps) {
             </tr>
             <tr>
               <td>Missed Payments</td>
-              <td style={{ textAlign: 'right', color: mortgage.missed_payments > 0 ? '#ef4444' : 'inherit' }}>
-                {mortgage.missed_payments}
+              <td style={{ textAlign: 'right', color: (mortgage.missed_payments ?? 0) > 0 ? '#ef4444' : 'inherit' }}>
+                {mortgage.missed_payments ?? 0}
               </td>
             </tr>
           </tbody>

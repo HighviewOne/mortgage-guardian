@@ -2,6 +2,8 @@
  * Centralized API client for Mortgage Guardian backend
  */
 
+/// <reference types="vite/client" />
+
 import type {
   Mortgage,
   MortgageCreate,
