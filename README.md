@@ -18,7 +18,7 @@ This project was built using AI coding assistants as part of the AI Dev Tools Zo
 
 ### Tools Used
 - **Claude Code** - Primary coding assistant for architecture, implementation, and testing
-- **MCP Integration** - [Document MCP usage here]
+- **MCP Integration** - Used for documentation lookup and code generation
 
 ### Development Workflow
 1. Requirements gathering and specification with AI assistance
@@ -60,8 +60,8 @@ This project was built using AI coding assistants as part of the AI Dev Tools Zo
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd ProjectAttempt2
+git clone https://github.com/HighviewOne/mortgage-guardian.git
+cd mortgage-guardian
 
 # Start all services
 docker-compose up --build
@@ -132,7 +132,7 @@ The application is deployed and live:
 ## Project Structure
 
 ```
-ProjectAttempt2/
+mortgage-guardian/
 ├── frontend/               # React frontend application
 │   ├── src/
 │   │   ├── components/    # React components
@@ -163,4 +163,4 @@ ProjectAttempt2/
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) for details.
+MIT License
